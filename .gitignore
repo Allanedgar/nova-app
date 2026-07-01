@@ -6,6 +6,15 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+coverage/
+.nyc_output/
+
+# TypeScript compiled outputs (we keep .ts source in git, never the .js/.d.ts)
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+tsconfig.*.tsbuildinfo
 
 # Environment
 .env
@@ -22,10 +31,6 @@ Thumbs.db
 *.log
 logs/
 
-# Coverage
-coverage/
-.nyc_output/
-
 # Test artifacts
 playwright-report/
 test-results/
@@ -38,7 +43,3 @@ supabase/.temp
 *.swp
 *.swo
 *~
-
-# TypeScript
-*.js.map
-*.d.ts.map

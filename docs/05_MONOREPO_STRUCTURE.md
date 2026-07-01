@@ -1,3 +1,4 @@
+**See also:** [04_TECH_STACK.md](04_TECH_STACK.md), [06_DEPENDENCIES.md](06_DEPENDENCIES.md), [01_PROJECT_VISION.md](01_PROJECT_VISION.md)
 # Monorepo Structure
 
 **Document:** Phase 0 — Foundation

@@ -1,3 +1,4 @@
+**See also:** [04_TECH_STACK.md](04_TECH_STACK.md), [05_MONOREPO_STRUCTURE.md](05_MONOREPO_STRUCTURE.md), [27_TESTING_STRATEGY.md](27_TESTING_STRATEGY.md)
 # Dependencies
 
 **Document:** Phase 0 — Foundation

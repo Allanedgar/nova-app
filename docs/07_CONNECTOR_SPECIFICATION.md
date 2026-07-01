@@ -1,3 +1,4 @@
+**See also:** [08_MARKET_DATA_ENGINE.md](08_MARKET_DATA_ENGINE.md), [12_ASSET_NORMALIZATION.md](12_ASSET_NORMALIZATION.md), [09_DISCOVERY_ENGINE.md](09_DISCOVERY_ENGINE.md)
 # Connector Specification
 
 **Document:** Phase 1 — Real Data

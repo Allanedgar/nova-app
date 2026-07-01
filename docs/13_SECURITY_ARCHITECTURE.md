@@ -1,3 +1,4 @@
+**See also:** [14_DATABASE_SCHEMA.md](14_DATABASE_SCHEMA.md), [20_BIOMETRIC_SECURITY.md](20_BIOMETRIC_SECURITY.md), [23_AUDIT_LOGGING.md](23_AUDIT_LOGGING.md)
 # Security Architecture
 
 **Document:** Phase 3 — Auth + Multi-Tenant

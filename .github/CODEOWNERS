@@ -1,0 +1,73 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# NOVA-app — CODEOWNERS (auto-assigns reviewers per domain)
+# ─────────────────────────────────────────────────────────────────────────────
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# STATUS: PLACEHOLDERS
+#   The @nova-app/<team> tokens below are placeholders representing the GitHub
+#   TEAMS that will own each domain per ORGANIZATIONAL-STRUCTURE.md §2. They
+#   are NOT yet real GitHub usernames or team handles.
+#
+#   GitHub CODEOWNERS requires either a real @username or a real @org/team-name.
+#   Until those teams are created in the @nova-app GitHub organization and real
+#   people are assigned, GitHub will treat every entry below as a no-op (it
+#   will not request any review automatically).
+#
+#   TODO for human (Forge or CEO):
+#     1. Create teams in the @nova-app GitHub org with these slugs:
+#        backend, frontend, mobile, architecture, trading, market-data,
+#        database, cache, risk, alerts, execution, documentation, devops
+#     2. Map the personas from ORGANIZATIONAL-STRUCTURE.md §2 to each team:
+#          /apps/api/         @nova-app/backend       ← Nova (Director #16)
+#          /apps/web/         @nova-app/frontend      ← Aurora (#20)
+#          /apps/mobile/      @nova-app/mobile        ← Orion (#21)
+#          /packages/shared/  @nova-app/architecture  ← Atlas (#01)
+#          /packages/engine/  @nova-app/trading       ← Apollo (#11) + Quant (#12)
+#          /packages/connectors/  @nova-app/market-data ← Mercury (#07) + Neptune (#08) + BridgeMaster (#09)
+#          /packages/persistence/ @nova-app/database   ← Titan (#17)
+#          /packages/cache/   @nova-app/cache         ← Redis (#18)
+#          /packages/risk/    @nova-app/risk          ← Aegis (#13)
+#          /packages/alerts/  @nova-app/alerts        ← Beacon (#25)
+#          /packages/execution/ @nova-app/execution   ← Vulcan (#14)
+#          /supabase/         @nova-app/database      ← Titan (#17)
+#          /docs/             @nova-app/documentation ← Sage (#02)
+#          /.github/          @nova-app/devops        ← Forge (#23)
+#          *                  @nova-app/architecture  ← Atlas (#01) — fallback
+#     3. Find/replace `PLACEHOLDER — see header` markers in this file with
+#        the real team handles, OR replace the whole file with the
+#        mapping above once teams exist.
+#
+# SCOPE NOTE (HARD):
+#   This file is for the NOVA-app repo ONLY. It must NOT be inherited by,
+#   copied into, or otherwise trigger ownership in the sibling
+#   `arbitrage-pro-work` repo (which has its own CODEOWNERS). If the team
+#   is ever shared between the two repos, coordinate via the Forge + the
+#   sibling repo's CODEOWNERS owner, do not symlink or share.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Apps ─────────────────────────────────────────────────────────────────────
+/apps/api/                    @nova-app/backend       PLACEHOLDER — see header
+/apps/web/                    @nova-app/frontend      PLACEHOLDER — see header
+/apps/mobile/                 @nova-app/mobile        PLACEHOLDER — see header
+
+# ── Shared packages (domain-by-domain) ───────────────────────────────────────
+/packages/shared/             @nova-app/architecture  PLACEHOLDER — see header
+/packages/engine/             @nova-app/trading       PLACEHOLDER — see header
+/packages/connectors/         @nova-app/market-data   PLACEHOLDER — see header
+/packages/persistence/        @nova-app/database      PLACEHOLDER — see header
+/packages/cache/              @nova-app/cache         PLACEHOLDER — see header
+/packages/risk/               @nova-app/risk          PLACEHOLDER — see header
+/packages/alerts/             @nova-app/alerts        PLACEHOLDER — see header
+/packages/execution/          @nova-app/execution     PLACEHOLDER — see header
+
+# ── Supabase (DB / RLS / migrations) ─────────────────────────────────────────
+/supabase/                    @nova-app/database      PLACEHOLDER — see header
+
+# ── Docs ─────────────────────────────────────────────────────────────────────
+/docs/                        @nova-app/documentation PLACEHOLDER — see header
+
+# ── DevOps (this directory owns itself) ──────────────────────────────────────
+/.github/                     @nova-app/devops        PLACEHOLDER — see header
+
+# ── Default fallback — anything not listed above ─────────────────────────────
+*                             @nova-app/architecture  PLACEHOLDER — see header

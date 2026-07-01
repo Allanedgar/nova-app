@@ -112,6 +112,14 @@ docker compose ps
 
 ## Documentation
 
+> **📑 Master index:** [docs/INDEX.md](docs/INDEX.md) — all 32 specs grouped by domain, with owning directors. Use this as the entry point.
+
+### Index
+
+- **[Documentation Master Index](docs/INDEX.md)** — single-page navigation of every spec, by domain and owning director.
+- **[Phase-based Docs](docs/README.md)** — specs organized by build phase (the order the team works in).
+
+
 ### Core Specifications
 
 | Document | Purpose |

@@ -1,3 +1,4 @@
+**See also:** [05_MONOREPO_STRUCTURE.md](05_MONOREPO_STRUCTURE.md), [06_DEPENDENCIES.md](06_DEPENDENCIES.md), [01_PROJECT_VISION.md](01_PROJECT_VISION.md)
 # Tech Stack
 
 **Document:** Phase 0 — Foundation

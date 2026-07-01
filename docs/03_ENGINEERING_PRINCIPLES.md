@@ -1,3 +1,4 @@
+**See also:** [01_PROJECT_VISION.md](01_PROJECT_VISION.md), [05_MONOREPO_STRUCTURE.md](05_MONOREPO_STRUCTURE.md), [27_TESTING_STRATEGY.md](27_TESTING_STRATEGY.md)
 # Engineering Principles
 
 **Document:** Phase 0 — Foundation

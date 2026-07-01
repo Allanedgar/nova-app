@@ -4,6 +4,9 @@
 
 This documentation is organized by development phase, matching the actual repository implementation at https://github.com/Allanedgar/arbitrage-pro.
 
+
+> **📑 Master index:** [docs/INDEX.md](INDEX.md) — all 32 specs grouped by domain, with owning directors.
+
 ## Quick Navigation
 
 ### Phase-Based Documentation

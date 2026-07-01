@@ -1,0 +1,29 @@
+{
+  "name": "nova-app",
+  "version": "0.0.0",
+  "private": true,
+  "description": "NOVA-app monorepo — apps, packages, services, connectors, tools",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.15.9"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --stream run dev",
+    "build": "tsc -b",
+    "test": "pnpm -r --stream run test",
+    "lint": "pnpm -r --stream run lint",
+    "lint:fix": "pnpm -r --stream run lint:fix",
+    "typecheck": "pnpm -r --stream run typecheck",
+    "clean": "pnpm -r --stream run clean && rimraf node_modules"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "eslint": "^9",
+    "eslint-plugin-boundaries": "^6.0.2",
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.62.1"
+  }
+}

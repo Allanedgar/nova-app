@@ -1,3 +1,4 @@
+**See also:** [07_CONNECTOR_SPECIFICATION.md](07_CONNECTOR_SPECIFICATION.md), [09_DISCOVERY_ENGINE.md](09_DISCOVERY_ENGINE.md), [14_DATABASE_SCHEMA.md](14_DATABASE_SCHEMA.md)
 # Asset Normalization
 
 **Document:** Phase 2 — Detection v2
