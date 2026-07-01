@@ -43,6 +43,19 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@26.1.0)
 
+  packages/connectors:
+    dependencies:
+      '@nova-app/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@26.1.0)
+
   packages/engine:
     dependencies:
       '@nova-app/shared':

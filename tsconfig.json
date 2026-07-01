@@ -5,6 +5,7 @@
     { "path": "./packages/shared" },
     { "path": "./packages/engine" },
     { "path": "./packages/persistence" },
-    { "path": "./packages/cache" }
+    { "path": "./packages/cache" },
+    { "path": "./packages/connectors" }
   ]
 }

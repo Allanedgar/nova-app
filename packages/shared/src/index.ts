@@ -5,14 +5,12 @@
 
 export const NOVA_SHARED_VERSION = '0.1.0';
 
-/** Canonical asset identifier — see docs/12_ASSET_NORMALIZATION.md. */
-export interface AssetId {
-  readonly chain: string;
-  readonly contract: string | null; // null for native assets
-}
-
-/** Trading pair — `BTC/USDT` → symbol="BTCUSDT" on a CEX, pair="BTC/USDT" on a DEX. */
-export interface TradingPair {
-  readonly base: string;
-  readonly quote: string;
-}
+export type { AssetId, TradingPair, SymbolNormalizationTable } from './assets.js';
+export type {
+  Connector,
+  ConnectorKind,
+  ConnectorStatus,
+  ConnectorHealth,
+  ExchangeInfo,
+  PriceSnapshot,
+} from './connector.js';
