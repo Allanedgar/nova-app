@@ -1,0 +1,424 @@
+# ARBITRAGE-PRO Data Flow Diagrams
+
+## Complete Data Flow
+
+```mermaid
+flowchart LR
+    A[CEX/DEX APIs] --> B[Connector Layer]
+    B --> C[Discovery Engine]
+    C --> D[Market Data Buffer]
+    
+    D --> E[Arbitrage Engine]
+    E --> F[Opportunity Detector]
+    F --> G{Risk Check}
+    
+    G -->|Low Risk| H[Opportunity Queue]
+    G -->|High Risk| I[Discard]
+    
+    H --> J[Alert Service]
+    H --> K[Execution Router]
+    
+    K --> L{User Tier}
+    L -->|Manual| M[Human Review]
+    L -->|Simulated| N[Paper Trading]
+    L -->|Automated| O[Guardrails Check]
+    
+    O -->|Pass| P[Trade Execution]
+    O -->|Fail| Q[Block + Log]
+    
+    M --> R{Approve?}
+    R -->|Yes| P
+    R -->|No| S[Reject]
+    
+    P --> T[Trade Record]
+    T --> U[Audit Log]
+    
+    J --> U
+    Q --> U
+    S --> U
+```
+
+## Market Data Pipeline
+
+```mermaid
+flowchart TD
+    A[Binance WebSocket] --> B[Binance Connector]
+    C[Coinbase WebSocket] --> D[Coinbase Connector]
+    E[OKX REST API] --> F[OKX Connector]
+    G[Uniswap Subgraph] --> H[Uniswap Connector]
+    
+    B --> I{Parse?}
+    D --> I
+    F --> I
+    H --> I
+    
+    I -->|Yes| J[Normalize]
+    I -->|No| K[Discard]
+    
+    J --> L{Validate?}
+    L -->|No| K
+    L -->|Yes| M[Price Snapshot]
+    
+    M --> N[Redis Cache]
+    M --> O[PostgreSQL]
+    
+    N --> P[WebSocket Broadcast]
+    O --> Q[Historical Storage]
+    
+    P --> R[Web Dashboard]
+    P --> S[Mobile App]
+```
+
+## Discovery Flow
+
+```mermaid
+flowchart TD
+    A[Start Discovery] --> B[Query Exchange APIs]
+    B --> C{Response OK?}
+    
+    C -->|No| D[Retry with Backoff]
+    D --> E{Retries Exhausted?}
+    E -->|No| B
+    E -->|Yes| F[Mark Exchange Down]
+    
+    C -->|Yes| G[Parse Trading Pairs]
+    G --> H{New Pair?}
+    
+    H -->|Yes| I[Add to Registry]
+    H -->|No| J{Updated Metadata?}
+    
+    J -->|Yes| K[Update Registry]
+    J -->|No| L{Delisted?}
+    
+    L -->|Yes| M[Remove from Registry]
+    L -->|No| N[Keep Existing]
+    
+    I --> O[Persist to DB]
+    K --> O
+    M --> O
+    N --> O
+    
+    O --> P[Broadcast Update]
+    F --> Q[Alert Ops Team]
+```
+
+## Arbitrage Detection Flow
+
+```mermaid
+flowchart TD
+    A[Start Detection] --> B[Fetch Market Snapshots]
+    B --> C{Snapshots < 5s old?}
+    
+    C -->|No| D[Skip Cycle]
+    C -->|Yes| E[Group by Pair]
+    
+    E --> F{Multiple Exchanges?}
+    F -->|No| G[Skip Pair]
+    F -->|Yes| H[Compare Prices]
+    
+    H --> I{Spread > Threshold?}
+    I -->|No| G
+    I -->|Yes| J[Calculate Fees]
+    
+    J --> K[Calculate Net Profit]
+    K --> L{Profitable after fees?}
+    
+    L -->|No| G
+    L -->|Yes| M[Check Liquidity]
+    
+    M --> N{Liquidity sufficient?}
+    N -->|No| G
+    N -->|Yes| O[Score Risk]
+    
+    O --> P[Calculate Confidence]
+    P --> Q[Create Opportunity]
+    
+    Q --> R[Persist to DB]
+    R --> S[Broadcast via WebSocket]
+    
+    G --> T[End Cycle]
+    D --> T
+    S --> T
+```
+
+## Execution Flow
+
+```mermaid
+flowchart TD
+    A[User Click Execute] --> B{Authentication Valid?}
+    
+    B -->|No| C[Redirect to Login]
+    B -->|Yes| D{Opportunity Expired?}
+    
+    D -->|Yes| E[Show Error]
+    D -->|No| F{Risk Tier?}
+    
+    F -->|Manual| G[Create Dry Run]
+    F -->|Simulated| H[Run Simulation]
+    F -->|Automated| I[Check Guardrails]
+    
+    I --> J{All Pass?}
+    J -->|No| K[Log Block]
+    J -->|Yes| L[Execute Buy Order]
+    
+    L --> M{Buy Filled?}
+    M -->|No| N[Retry/Cancel]
+    M -->|Yes| O[Execute Sell Order]
+    
+    O --> P{Sell Filled?}
+    P -->|No| Q[Retry/Cancel]
+    P -->|Yes| R[Calculate P&L]
+    
+    R --> S[Record Trade]
+    S --> T[Update Stats]
+    T --> U[Send Notification]
+    
+    G --> V[Show Review UI]
+    H --> W[Show Results]
+    K --> X[Show Block Reason]
+    N --> Y[Show Error]
+    Q --> Y
+    
+    V --> Z[Await User Action]
+    Z --> AA{User Approves?}
+    AA -->|Yes| L
+    AA -->|No| AB[Discard]
+```
+
+## Risk Scoring Flow
+
+```mermaid
+flowchart TD
+    A[Opportunity] --> B[Liquidity Score]
+    A --> C[Volatility Score]
+    A --> D[Exchange Score]
+    A --> E[Bridge Score]
+    A --> F[MEV Risk Score]
+    A --> G[Network Score]
+    
+    B --> H{Weighted Average}
+    C --> H
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+    
+    H --> I{Score > 50?}
+    
+    I -->|No| J[High Risk Flag]
+    I -->|Yes| K[Medium Risk Flag]
+    
+    J --> L[Block Automated]
+    K --> M[Allow with Caution]
+    
+    L --> N[Log Decision]
+    M --> N
+```
+
+## Alert Flow
+
+```mermaid
+flowchart TD
+    A[Opportunity Detected] --> B[Load Alert Rules]
+    B --> C{User Has Rules?}
+    
+    C -->|No| D[Skip]
+    C -->|Yes| E[Match Against Rules]
+    
+    E --> F{Any Match?}
+    F -->|No| D
+    F -->|Yes| G[Check Cooldown]
+    
+    G --> H{Cooldown Active?}
+    H -->|Yes| D
+    H -->|No| I[Build Notification]
+    
+    I --> J[Push via Expo]
+    I --> K[Send Email]
+    I --> L[Send SMS]
+    
+    J --> M[Log Alert]
+    K --> M
+    L --> M
+    
+    M --> N[Update Last Triggered]
+    N --> D
+```
+
+## WebSocket Message Flow
+
+```mermaid
+flowchart LR
+    A[Detector Worker] --> B{Publish?}
+    B -->|Yes| C[WebSocket Gateway]
+    
+    C --> D{Subscribers?}
+    D -->|No| E[Drop]
+    D -->|Yes| F[Broadcast]
+    
+    F --> G[Client A]
+    F --> H[Client B]
+    F --> I[Client C]
+    
+    G --> J[Update UI]
+    H --> J
+    I --> J
+    
+    J --> K[Play Sound]
+    J --> L[Show Toast]
+    J --> M[Vibrate]
+```
+
+## Cache Invalidation Flow
+
+```mermaid
+flowchart TD
+    A[Price Update] --> B[Write to Redis]
+    B --> C[Write to PostgreSQL]
+    
+    C --> D{Related Cached?}
+    D -->|Yes| E[Invalidate Cache]
+    D -->|No| F[Keep Cache]
+    
+    E --> G[Delete Key]
+    G --> H{Subscribers?}
+    H -->|Yes| I[Notify Subscribers]
+    H -->|No| J[End]
+    
+    F --> J
+    I --> J
+```
+
+## Error Handling Flow
+
+```mermaid
+flowchart TD
+    A[API Request] --> B{Valid?}
+    
+    B -->|No| C[400 Bad Request]
+    B -->|Yes| D{Authenticated?}
+    
+    D -->|No| E[401 Unauthorized]
+    D -->|Yes| F{Authorized?}
+    
+    F -->|No| G[403 Forbidden]
+    F -->|Yes| H{Found?}
+    
+    H -->|No| I[404 Not Found]
+    H -->|Yes| J{Valid Data?}
+    
+    J -->|No| K[422 Validation Error]
+    J -->|Yes| L[Process Request]
+    
+    L --> M{Success?}
+    M -->|No| N[500 Server Error]
+    M -->|Yes| O[200/201 Success]
+    
+    C --> P[Error Log]
+    E --> P
+    G --> P
+    I --> P
+    K --> P
+    N --> P
+    
+    P --> Q[Alert if Critical]
+    O --> R[Success Log]
+```
+
+## Rate Limiting Flow
+
+```mermaid
+flowchart TD
+    A[Incoming Request] --> B{Authenticated?}
+    
+    B -->|No| C[Anonymous Limit]
+    B -->|Yes| D{User Tier?}
+    
+    D -->|Free| E[Free Limit]
+    D -->|Premium| F[Premium Limit]
+    D -->|Admin| G[Admin Limit]
+    
+    C --> H{Under Limit?}
+    E --> H
+    F --> H
+    G --> H
+    
+    H -->|Yes| I[Allow Request]
+    H -->|No| J[429 Too Many Requests]
+    
+    I --> K[Increment Counter]
+    K --> L[Update Headers]
+    
+    L --> M[Process Request]
+    J --> N[Return Retry-After]
+```
+
+## Database Transaction Flow
+
+```mermaid
+flowchart TD
+    A[Start Transaction] --> B[Acquire Connection]
+    B --> C[Set Isolation Level]
+    
+    C --> D{Operation Type?}
+    
+    D -->|Read| E[SELECT Query]
+    D -->|Write| F[INSERT/UPDATE]
+    
+    E --> G{Result OK?}
+    F --> H{Constraints Pass?}
+    
+    G -->|No| I[Rollback]
+    H -->|No| I
+    
+    G -->|Yes| J[Continue]
+    H -->|Yes| J
+    
+    J --> K{More Operations?}
+    K -->|Yes| D
+    K -->|No| L[Commit]
+    
+    L --> M[Release Connection]
+    I --> M
+    
+    M --> N{Error?}
+    N -->|Yes| O[Log + Alert]
+    N -->|No| P[Return Result]
+```
+
+## Health Check Flow
+
+```mermaid
+flowchart TD
+    A[Health Check Request] --> B{Liveness or Readiness?}
+    
+    B -->|Liveness| C[Check Process]
+    B -->|Readiness| D[Check Dependencies]
+    
+    C --> E{Process Healthy?}
+    E -->|No| F[503 Unhealthy]
+    E -->|Yes| G[200 Healthy]
+    
+    D --> H[Check Database]
+    D --> I[Check Redis]
+    D --> J[Check Connectors]
+    
+    H --> K{DB OK?}
+    I --> L{Redis OK?}
+    J --> M{Connectors OK?}
+    
+    K -->|No| N[503 Degraded]
+    L -->|No| N
+    M -->|No| N
+    
+    K -->|Yes| O[Continue]
+    L -->|Yes| O
+    M -->|Yes| O
+    
+    O --> P{All OK?}
+    P -->|Yes| G
+    P -->|No| N
+    
+    F --> Q[End]
+    G --> Q
+    N --> Q

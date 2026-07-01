@@ -1,0 +1,574 @@
+# ARBITRAGE-PRO System Architecture
+
+## High-Level Architecture
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        Web[Web Dashboard]
+        Mobile[Mobile App]
+        API_Clients[API Clients]
+    end
+    
+    subgraph "API Layer"
+        Gateway[API Gateway]
+        Auth[Auth Service]
+        RateLimit[Rate Limiter]
+    end
+    
+    subgraph "Application Layer"
+        Market[Market Service]
+        Arbitrage[Arbitrage Engine]
+        Risk[Risk Engine]
+        Execution[Execution Engine]
+        Alerts[Alert Service]
+    end
+    
+    subgraph "Data Layer"
+        Postgres[(PostgreSQL)]
+        Redis[(Redis)]
+        Snapshots[Price Snapshots]
+    end
+    
+    subgraph "External"
+        CEXs[CEX Connectors]
+        DEXs[DEX Connectors]
+        Bridges[Bridge Aggregator]
+    end
+    
+    Web --> Gateway
+    Mobile --> Gateway
+    API_Clients --> Gateway
+    
+    Gateway --> Auth
+    Gateway --> RateLimit
+    Gateway --> Market
+    
+    Market --> Arbitrage
+    Arbitrage --> Risk
+    Risk --> Execution
+    Execution --> Alerts
+    
+    Market --> Snapshots
+    Snapshots --> Postgres
+    Snapshots --> Redis
+    
+    Market --> CEXs
+    Market --> DEXs
+    Execution --> Bridges
+```
+
+## Component Architecture
+
+```mermaid
+graph LR
+    subgraph "Frontend"
+        NextJS[Next.js 15]
+        ReactNative[Expo React Native]
+    end
+    
+    subgraph "API"
+        NestJS[NestJS 11]
+        WS[WebSocket Gateway]
+        Workers[BullMQ Workers]
+    end
+    
+    subgraph "Core Engines"
+        Discovery[Discovery Engine]
+        MarketData[Market Data Engine]
+        ArbitrageEngine[Arbitrage Engine]
+        RiskEngine[Risk Engine]
+        ExecutionEngine[Execution Engine]
+    end
+    
+    subgraph "Connectors"
+        CEXConnector[CEX Connectors]
+        DEXConnector[DEX Connectors]
+        BridgeConnector[Bridge Aggregator]
+    end
+    
+    subgraph "Data"
+        PostgresDB[(PostgreSQL)]
+        RedisCache[(Redis)]
+    end
+    
+    NextJS --> NestJS
+    ReactNative --> NestJS
+    
+    NestJS --> WS
+    NestJS --> Workers
+    
+    Workers --> Discovery
+    Workers --> MarketData
+    
+    Discovery --> CEXConnector
+    Discovery --> DEXConnector
+    Discovery --> BridgeConnector
+    
+    MarketData --> CEXConnector
+    MarketData --> DEXConnector
+    
+    CEXConnector --> ArbitrageEngine
+    DEXConnector --> ArbitrageEngine
+    
+    ArbitrageEngine --> RiskEngine
+    RiskEngine --> ExecutionEngine
+    
+    ExecutionEngine --> CEXConnector
+    ExecutionEngine --> BridgeConnector
+    
+    NestJS --> PostgresDB
+    NestJS --> RedisCache
+    
+    Workers --> PostgresDB
+    Workers --> RedisCache
+```
+
+## Data Flow Architecture
+
+```mermaid
+flowchart TD
+    A[External APIs] --> B[Connector Layer]
+    B --> C[Discovery Engine]
+    C --> D[Market Data Buffer]
+    
+    D --> E[Arbitrage Engine]
+    E --> F[Opportunity Detector]
+    F --> G{Risk Check}
+    
+    G -->|Low Risk| H[Opportunity Queue]
+    G -->|High Risk| I[Discard]
+    
+    H --> J[Alert Service]
+    H --> K[Execution Router]
+    
+    K --> L{User Tier}
+    L -->|Manual| M[Human Review]
+    L -->|Simulated| N[Paper Trading]
+    L -->|Automated| O[Guardrails Check]
+    
+    O -->|Pass| P[Trade Execution]
+    O -->|Fail| Q[Block + Log]
+    
+    M --> R{Approve?}
+    R -->|Yes| P
+    R -->|No| S[Reject]
+    
+    P --> T[Trade Record]
+    T --> U[Audit Log]
+    
+    J --> U
+    Q --> U
+    S --> U
+```
+
+## Connector Architecture
+
+```mermaid
+graph TB
+    subgraph "Connector Registry"
+        Registry[ConnectorRegistry]
+        Registry --> CEX[CEX Connectors]
+        Registry --> DEX[DEX Connectors]
+        Registry --> Bridge[Bridge Connectors]
+    end
+    
+    subgraph "CEX Connectors"
+        CEX --> Binance[Binance]
+        CEX --> Coinbase[Coinbase]
+        CEX --> OKX[OKX]
+        CEX --> Bybit[Bybit]
+        CEX --> Kraken[Kraken]
+        CEX --> Others[+ 15 more]
+    end
+    
+    subgraph "DEX Connectors"
+        DEX --> Uniswap[Uniswap V3/V4]
+        DEX --> PancakeSwap[PancakeSwap]
+        DEX --> Curve[Curve]
+        DEX --> Orca[Orca]
+        DEX --> Others[+ more]
+    end
+    
+    subgraph "Bridge Connectors"
+        Bridge --> Stargate[Stargate]
+        Bridge --> Wormhole[Wormhole]
+        Bridge --> Across[Across]
+        Bridge --> DeBridge[deBridge]
+        Bridge --> Others[+ more]
+    end
+    
+    subgraph "Protocols"
+        REST[REST API]
+        WS[WebSocket]
+        GraphQL[GraphQL]
+        RPC[RPC]
+        SDK[Official SDK]
+    end
+    
+    Binance --> REST
+    Binance --> WS
+    
+    Uniswap --> GraphQL
+    Uniswap --> RPC
+    
+    Stargate --> REST
+    Stargate --> SDK
+```
+
+## Worker Architecture
+
+```mermaid
+graph TB
+    subgraph "Scheduler"
+        Cron[Cron Jobs]
+    end
+    
+    subgraph "Workers"
+        Detector[Detector Worker<br/>5s interval]
+        Alerts[Alerts Worker<br/>10s interval]
+        Executor[Executor Worker<br/>BullMQ]
+        Discovery[Discovery Worker<br/>1h interval]
+        Bridge[Bridge Worker<br/>On-demand]
+    end
+    
+    subgraph "Queues"
+        Q1[detector]
+        Q2[alerts]
+        Q3[manual]
+        Q4[simulated]
+        Q5[automated]
+    end
+    
+    subgraph "Processing"
+        P1[Fetch Snapshots]
+        P2[Detect Opportunities]
+        P3[Score Risk]
+        P4[Persist Results]
+        P5[Broadcast Updates]
+    end
+    
+    Cron --> Detector
+    Cron --> Alerts
+    Cron --> Discovery
+    
+    Detector --> Q1
+    Alerts --> Q2
+    Executor --> Q3
+    Executor --> Q4
+    Executor --> Q5
+    
+    Q1 --> P1
+    P1 --> P2
+    P2 --> P3
+    P3 --> P4
+    P4 --> P5
+    
+    P5 --> WS[WebSocket Broadcast]
+```
+
+## Database Architecture
+
+```mermaid
+graph TB
+    subgraph "PostgreSQL"
+        Users[profiles]
+        Opportunities[opportunities]
+        Trades[trades]
+        Alerts[alert_rules]
+        Audit[audit_log]
+        Connectors[connectors]
+        Snapshots[price_snapshots]
+    end
+    
+    subgraph "Redis"
+        Cache[Market Cache]
+        Sessions[User Sessions]
+        Queue[Job Queue]
+        RateLimit[Rate Limits]
+    end
+    
+    subgraph "Connections"
+        App[API Server]
+        Workers[Background Workers]
+        Web[Web Dashboard]
+        Mobile[Mobile App]
+    end
+    
+    App --> Users
+    App --> Opportunities
+    App --> Trades
+    App --> Alerts
+    
+    Workers --> Snapshots
+    Workers --> Opportunities
+    Workers --> Audit
+    
+    Web --> Cache
+    Mobile --> Cache
+    
+    App --> Sessions
+    Workers --> Queue
+    App --> RateLimit
+```
+
+## Security Architecture
+
+```mermaid
+graph TB
+    subgraph "Authentication"
+        JWT[JWT Tokens]
+        MFA[MFA]
+        SSO[OAuth 2.0]
+        Biometrics[Biometrics]
+    end
+    
+    subgraph "Authorization"
+        RBAC[RBAC]
+        Permissions[Permissions]
+        Roles[Roles]
+    end
+    
+    subgraph "Data Protection"
+        TLS[TLS 1.3]
+        Encryption[AES-256]
+        Hashing[bcrypt]
+    end
+    
+    subgraph "Monitoring"
+        Audit[Audit Logging]
+        Alerts[Security Alerts]
+        RateLimit[Rate Limiting]
+    end
+    
+    subgraph "Infrastructure"
+        Firewall[Firewall]
+        WAF[WAF]
+        DDoS[DDoS Protection]
+    end
+    
+    User[User] --> JWT
+    User --> MFA
+    User --> Biometrics
+    
+    JWT --> RBAC
+    RBAC --> Permissions
+    
+    Request[API Request] --> TLS
+    TLS --> Encryption
+    Encryption --> Audit
+    
+    Audit --> Alerts
+    
+    Request --> RateLimit
+    RateLimit --> Firewall
+    Firewall --> WAF
+    WAF --> DDoS
+```
+
+## Deployment Architecture
+
+```mermaid
+graph TB
+    subgraph "GitHub"
+        Code[Source Code]
+        Actions[CI/CD]
+    end
+    
+    subgraph "Container Registry"
+        GHCR[GitHub Container Registry]
+    end
+    
+    subgraph "Kubernetes"
+        Ingress[Ingress]
+        API[API Pods]
+        Workers[Worker Pods]
+        HPA[Horizontal Pod Autoscaler]
+    end
+    
+    subgraph "Database"
+        Primary[(Primary DB)]
+        Replica[(Read Replica)]
+    end
+    
+    subgraph "Cache"
+        Redis[(Redis Cluster)]
+    end
+    
+    subgraph "Monitoring"
+        Prometheus[Prometheus]
+        Grafana[Grafana]
+        Jaeger[Jaeger]
+        AlertManager[AlertManager]
+    end
+    
+    Code --> Actions
+    Actions --> GHCR
+    GHCR --> API
+    GHCR --> Workers
+    
+    Ingress --> API
+    API --> HPA
+    HPA --> API
+    
+    Workers --> Primary
+    API --> Primary
+    Primary --> Replica
+    
+    API --> Redis
+    Workers --> Redis
+    
+    API --> Prometheus
+    Workers --> Prometheus
+    Prometheus --> Grafana
+    Prometheus --> AlertManager
+    Prometheus --> Jaeger
+```
+
+## Network Topology
+
+```mermaid
+graph TB
+    subgraph "Internet"
+        Users[Users]
+        CDN[CDN]
+    end
+    
+    subgraph "DMZ"
+        LB[Load Balancer]
+        WAF[Web Application Firewall]
+    end
+    
+    subgraph "Application Tier"
+        API1[API Instance 1]
+        API2[API Instance 2]
+        API3[API Instance 3]
+    end
+    
+    subgraph "Data Tier"
+        DB_Primary[(Primary Database)]
+        DB_Replica[(Read Replica)]
+        Redis[(Redis)]
+    end
+    
+    subgraph "External Services"
+        Exchanges[Crypto Exchanges]
+        Bridges[Bridge Protocols]
+        Notifications[Push Services]
+    end
+    
+    Users --> CDN
+    CDN --> LB
+    LB --> WAF
+    
+    WAF --> API1
+    WAF --> API2
+    WAF --> API3
+    
+    API1 --> DB_Primary
+    API2 --> DB_Primary
+    API3 --> DB_Primary
+    
+    DB_Primary --> DB_Replica
+    
+    API1 --> Redis
+    API2 --> Redis
+    API3 --> Redis
+    
+    API1 --> Exchanges
+    API1 --> Bridges
+    API1 --> Notifications
+```
+
+## Scalability Architecture
+
+```mermaid
+graph LR
+    subgraph "Load Distribution"
+        DNS[DNS]
+        CDN[CDN]
+        LB[Load Balancer]
+    end
+    
+    subgraph "Horizontal Scaling"
+        API1[API Pod 1]
+        API2[API Pod 2]
+        API3[API Pod 3]
+        APIn[API Pod N]
+    end
+    
+    subgraph "Auto Scaling"
+        HPA[Horizontal Pod Autoscaler]
+        Metrics[Custom Metrics]
+        VPA[Vertical Pod Autoscaler]
+    end
+    
+    subgraph "Database Scaling"
+        Primary[(Primary)]
+        Replica1[Replica 1]
+        Replica2[Replica 2]
+        Pool[Connection Pool]
+    end
+    
+    DNS --> CDN
+    CDN --> LB
+    LB --> API1
+    LB --> API2
+    LB --> API3
+    LB --> APIn
+    
+    HPA --> API1
+    HPA --> API2
+    HPA --> API3
+    HPA --> APIn
+    
+    Metrics --> HPA
+    
+    API1 --> Pool
+    API2 --> Pool
+    API3 --> Pool
+    APIn --> Pool
+    
+    Pool --> Primary
+    Primary --> Replica1
+    Primary --> Replica2
+```
+
+## Microservices Interaction
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant Discovery
+    participant MarketData
+    participant ArbitrageEngine
+    participant RiskEngine
+    participant Execution
+    participant Database
+    
+    Client->>API: Request Opportunities
+    API->>Database: Get Cached Opportunities
+    Database-->>API: Cached Data
+    
+    API->>MarketData: Fetch Live Snapshots
+    MarketData->>Discovery: Get Active Pairs
+    Discovery-->>MarketData: Pair List
+    
+    MarketData->>External: Fetch Prices
+    External-->>MarketData: Price Data
+    
+    MarketData->>ArbitrageEngine: Detect Opportunities
+    ArbitrageEngine->>RiskEngine: Score Risk
+    RiskEngine-->>ArbitrageEngine: Risk Scores
+    
+    ArbitrageEngine->>Database: Store Opportunities
+    ArbitrageEngine-->>API: Opportunities List
+    
+    API-->>Client: JSON Response
+    
+    loop Every 5 seconds
+        Discovery->>External: Update Pair List
+        MarketData->>External: Fetch Prices
+        ArbitrageEngine->>Database: Store New Opportunities
+    end

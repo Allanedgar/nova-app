@@ -1,0 +1,13 @@
+# Normalize line endings to LF, with shell scripts needing CRLF on Windows.
+* text=auto eol=lf
+
+# Shell scripts must use LF.
+*.sh text eol=lf
+
+# Windows scripts must use CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Markdown is always LF.
+*.md text eol=lf

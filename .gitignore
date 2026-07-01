@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Supabase
+supabase/.branches
+supabase/.temp
+
+# OS-specific
+*.swp
+*.swo
+*~
+
+# TypeScript
+*.js.map
+*.d.ts.map

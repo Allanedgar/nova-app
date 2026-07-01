@@ -1,0 +1,468 @@
+# ARBITRAGE-PRO Execution Diagrams
+
+## Execution Flow
+
+```mermaid
+flowchart TD
+    A[User Click Execute] --> B{Authentication Valid?}
+    
+    B -->|No| C[Redirect to Login]
+    B -->|Yes| D{Opportunity Expired?}
+    
+    D -->|Yes| E[Show Error]
+    D -->|No| F{Risk Tier?}
+    
+    F -->|Manual| G[Create Dry Run]
+    F -->|Simulated| H[Run Simulation]
+    F -->|Automated| I[Check Guardrails]
+    
+    I --> J{All Pass?}
+    J -->|No| K[Log Block]
+    J -->|Yes| L[Execute Buy Order]
+    
+    L --> M{Buy Filled?}
+    M -->|No| N[Retry/Cancel]
+    M -->|Yes| O[Execute Sell Order]
+    
+    O --> P{Sell Filled?}
+    P -->|No| Q[Retry/Cancel]
+    P -->|Yes| R[Calculate P&L]
+    
+    R --> S[Record Trade]
+    S --> T[Update Stats]
+    T --> U[Send Notification]
+    
+    G --> V[Show Review UI]
+    H --> W[Show Results]
+    K --> X[Show Block Reason]
+    N --> Y[Show Error]
+    Q --> Y
+    
+    V --> Z[Await User Action]
+    Z --> AA{User Approves?}
+    AA -->|Yes| L
+    AA -->|No| AB[Discard]
+```
+
+## Execution Tier Comparison
+
+```mermaid
+flowchart LR
+    A[Opportunity] --> B{Risk Tier}
+    
+    B -->|Manual| C[Human Review]
+    B -->|Simulated| D[Paper Trading]
+    B -->|Automated| E[Auto Execute]
+    
+    C --> F[User Reviews]
+    F --> G{Approve?}
+    G -->|Yes| H[Execute Trade]
+    G -->|No| I[Discard]
+    
+    D --> J[Simulate Fill]
+    J --> K[Calculate P&L]
+    K --> L[Record Result]
+    
+    E --> M[Guardrails]
+    M --> N{Safety Check}
+    N -->|Pass| H
+    N -->|Fail| O[Block Trade]
+    
+    H --> P[Real Orders]
+    P --> Q[Real P&L]
+```
+
+## Manual Execution Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI
+    participant API
+    participant DB
+    participant Exchange
+    
+    User->>UI: View Opportunity
+    UI->>API: GET /opportunities/:id
+    API->>DB: Fetch Opportunity
+    DB-->>API: Opportunity Data
+    API-->>UI: Opportunity Details
+    
+    User->>UI: Click Execute
+    UI->>API: POST /execute
+    API->>DB: Create Dry Run
+    DB-->>API: Trade ID
+    API-->>UI: Dry Run Created
+    
+    UI->>User: Show Review Screen
+    Note over UI: Display: Buy Price, Sell Price, Fees, Expected Profit
+    
+    User->>UI: Confirm Trade
+    UI->>API: POST /confirm
+    API->>Exchange: Place Buy Order
+    Exchange-->>API: Order Filled
+    API->>Exchange: Place Sell Order
+    Exchange-->>API: Order Filled
+    
+    API->>DB: Record Trade
+    DB-->>API: Trade Saved
+    API-->>UI: Success
+    
+    UI->>User: Show Results
+```
+
+## Automated Execution Sequence
+
+```mermaid
+sequenceDiagram
+    participant Worker
+    participant API
+    participant Guardrails
+    participant Safety
+    participant Exchange
+    participant DB
+    
+    Worker->>API: Execute Opportunity
+    API->>DB: Get Opportunity
+    DB-->>API: Opportunity Data
+    
+    API->>Guardrails: Check All Guardrails
+    Guardrails-->>API: Result
+    
+    alt Guardrails Pass
+        API->>Safety: Safety Check
+        Safety-->>API: Approved
+        
+        API->>Exchange: Place Buy Order (Market)
+        Exchange-->>API: Buy Filled @ Price
+        
+        API->>Exchange: Place Sell Order (Market)
+        Exchange-->>API: Sell Filled @ Price
+        
+        API->>API: Calculate P&L
+        
+        API->>DB: Record Trade
+        DB-->>API: Trade ID
+        
+        API->>DB: Update Stats
+        API->>Worker: Notify Complete
+        
+        Worker->>Worker: Log Success
+    else Guardrails Fail
+        API->>DB: Log Block Reason
+        API-->>Worker: Blocked
+        
+        Worker->>Worker: Log Failure
+    end
+```
+
+## Guardrail Evaluation
+
+```mermaid
+flowchart TD
+    A[Trade Request] --> B[1. Notional Check]
+    B --> C{Pass?}
+    
+    C -->|No| Z[Deny]
+    C -->|Yes| D[2. Risk Score]
+    D --> E{Pass?}
+    
+    E -->|No| Z
+    E -->|Yes| F[3. Daily Loss]
+    F --> G{Pass?}
+    
+    G -->|No| Z
+    G -->|Yes| H[4. Pair Cap]
+    H --> I{Pass?}
+    
+    I -->|No| Z
+    I -->|Yes| J[5. Cooldown]
+    J --> K{Pass?}
+    
+    K -->|No| Z
+    K -->|Yes| L[6. Auto-Pause]
+    L --> M{Pass?}
+    
+    M -->|No| Z
+    M -->|Yes| N[Approve Trade]
+    
+    Z --> O[Log Block]
+    O --> P[Alert User]
+    N --> Q[Execute Trade]
+```
+
+## Circuit Breaker State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> CLOSED
+    
+    CLOSED --> OPEN: Failure Count >= 3
+    OPEN --> HALF_OPEN: After 5 minutes
+    HALF_OPEN --> CLOSED: Success
+    HALF_OPEN --> OPEN: Failure
+    
+    OPEN --> OPEN: Requests Rejected
+    
+    note right of CLOSED
+        Normal operation
+        All requests allowed
+    end note
+    
+    note right of OPEN
+        Circuit tripped
+        All requests blocked
+        Alert ops team
+    end note
+    
+    note right of HALF_OPEN
+        Testing recovery
+        Limited requests
+    end note
+```
+
+## Retry Logic
+
+```mermaid
+flowchart TD
+    A[Attempt 1] --> B{Success?}
+    B -->|Yes| C[Return Result]
+    B -->|No| D{Retries Left?}
+    
+    D -->|No| E[Throw Error]
+    D -->|Yes| F[Wait 1s + Jitter]
+    
+    F --> G[Attempt 2]
+    G --> H{Success?}
+    H -->|Yes| C
+    H -->|No| I{Retries Left?}
+    
+    I -->|No| E
+    I -->|Yes| J[Wait 2s + Jitter]
+    
+    J --> K[Attempt 3]
+    K --> L{Success?}
+    L -->|Yes| C
+    L -->|No| E
+    
+    E --> M[Circuit Breaker]
+    M --> N[Open Circuit]
+```
+
+## Kill Switch Flow
+
+```mermaid
+flowchart TD
+    A[Trigger Event] --> B{Event Type?}
+    
+    B -->|Daily Loss| C[Pause 24h]
+    B -->|API Errors| D[Pause 5min]
+    B -->|Manual| E[Pause 24h]
+    B -->|Circuit Breaker| F[Pause 5min]
+    
+    C --> G[Set Auto-Paused Until]
+    D --> G
+    E --> G
+    F --> G
+    
+    G --> H[Cancel All Pending]
+    H --> I[Alert User]
+    I --> J[Log Event]
+    
+    J --> K[Notify Ops]
+    
+    L[User Resume] --> M{Cooldown OK?}
+    M -->|No| N[Deny Resume]
+    M -->|Yes| O[Clear Pause]
+    
+    O --> P[Resume Trading]
+```
+
+## Trade Lifecycle
+
+```mermaid
+flowchart TD
+    A[Created] --> B[Pending]
+    B --> C{Type?}
+    
+    C -->|Manual| D[Awaiting Review]
+    C -->|Automated| E[Validating]
+    
+    D --> F{User Action}
+    F -->|Approve| E
+    F -->|Reject| G[Cancelled]
+    
+    E --> H{Guardrails Pass?}
+    H -->|No| I[Blocked]
+    H -->|Yes| J[Buy Order]
+    
+    J --> K{Buy Filled?}
+    K -->|No| L[Failed]
+    K -->|Yes| M[Sell Order]
+    
+    M --> N{Sell Filled?}
+    N -->|No| L
+    N -->|Yes| O[Calculating P&L]
+    
+    O --> P[Filled]
+    
+    L --> Q[Failed]
+    I --> Q
+    G --> Q
+    
+    P --> R[Completed]
+    Q --> R
+```
+
+## Opportunity Expiry
+
+```mermaid
+flowchart TD
+    A[Opportunity Created] --> B[TTL: 30 seconds]
+    
+    B --> C{Time Check}
+    C -->|Active| D[Show to User]
+    C -->|Expired| E[Mark Expired]
+    
+    D --> F{User Executes?}
+    F -->|Yes| G[Remove from Queue]
+    F -->|No| C
+    
+    E --> H[Remove from Queue]
+    H --> I[Log Expiry]
+    
+    I --> J[Update Stats]
+    G --> J
+```
+
+## Fee Calculation
+
+```mermaid
+flowchart TD
+    A[Opportunity] --> B[Buy Fee]
+    A --> C[Sell Fee]
+    A --> D[Bridge Fee]
+    A --> E[Gas Cost]
+    
+    B --> F[Sum All Fees]
+    C --> F
+    D --> F
+    E --> F
+    
+    F --> G{Total Fee < Spread?}
+    
+    G -->|Yes| H[Profitable]
+    G -->|No| I[Not Profitable]
+    
+    H --> J[Calculate Net Profit]
+    J --> K[Create Opportunity]
+    
+    I --> L[Discard]
+```
+
+## Multi-Leg Execution
+
+```mermaid
+flowchart TD
+    A[Cross-Chain Opp] --> B[Approve Token]
+    B --> C[Bridge Transfer]
+    
+    C --> D{Transfer Success?}
+    D -->|No| E[Retry Bridge]
+    D -->|Yes| F[Wait for Completion]
+    
+    F --> G{Bridge Complete?}
+    G -->|No| H[Check Status]
+    H -->|Timeout| I[Abort]
+    H -->|Pending| G
+    G -->|Yes| J[Trade on Target Chain]
+    
+    J --> K{Trade Success?}
+    K -->|No| L[Retry Trade]
+    K -->|Yes| M[Bridge Back]
+    
+    M --> N{Return Transfer?}
+    N -->|Success| O[Complete]
+    N -->|Fail| P[Partial Profit]
+    
+    E --> Q[Max Retries?]
+    Q -->|Yes| I
+    Q -->|No| C
+    
+    L --> R[Max Retries?]
+    R -->|Yes| S[Record Loss]
+    R -->|No| J
+    
+    O --> T[Final P&L]
+    P --> T
+    I --> T
+    S --> T
+```
+
+## Capital Flow
+
+```mermaid
+flowchart LR
+    A[User Capital] --> B[Exchange A]
+    B --> C[Buy Asset]
+    C --> D[Transfer to Exchange B]
+    D --> E[Sell Asset]
+    E --> F[Profit]
+    
+    F --> G{Recycle?}
+    G -->|Yes| H[Return to Pool]
+    G -->|No| I[Withdraw]
+    
+    H --> A
+    
+    J[Bridge Protocol] --> D
+    
+    K[Fees] --> L[Exchange Fees]
+    K --> M[Bridge Fees]
+    K --> N[Gas Fees]
+    
+    L --> O[Total Cost]
+    M --> O
+    N --> O
+    
+    O --> P[Net Profit]
+    F --> P
+```
+
+## Error Recovery
+
+```mermaid
+flowchart TD
+    A[Error Detected] --> B{Error Type?}
+    
+    B -->|Network| C[Retry with Backoff]
+    B -->|Rate Limit| D[Wait + Retry]
+    B -->|Insufficient Balance| E[Skip Trade]
+    B -->|Invalid Price| F[Cancel Orders]
+    B -->|Timeout| G[Check Status]
+    
+    C --> H{Retry Exhausted?}
+    H -->|Yes| I[Circuit Breaker]
+    H -->|No| J[Resume]
+    
+    D --> K{Honor Retry-After?}
+    K -->|Yes| L[Wait]
+    K -->|No| M[Backoff]
+    
+    L --> N[Retry]
+    M --> N
+    
+    E --> O[Log + Alert]
+    F --> O
+    G --> P{Status?}
+    P -->|Pending| Q[Wait More]
+    P -->|Failed| R[Cancel All]
+    P -->|Success| S[Continue]
+    
+    I --> T[Alert Ops]
+    O --> T
+    R --> T
+    
+    T --> U[Kill Switch?]
+    U -->|Yes| V[Pause All]
+    U -->|No| W[Continue]
