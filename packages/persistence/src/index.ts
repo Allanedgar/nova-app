@@ -1,13 +1,17 @@
 /**
- * @nova-app/persistence — Supabase writer/reader.
- * Stub for Phase 0 — see docs/14_DATABASE_SCHEMA.md for the real schema.
+ * @nova-app/persistence — public API surface.
+ *
+ * @nova-app/persistence is the Supabase writer/reader. Per
+ * docs/14_DATABASE_SCHEMA.md + docs/02_PHASED_ROADMAP.md Task 1.8.
  */
 
-export const NOVA_PERSISTENCE_VERSION = '0.1.0';
-
-export class StubPersistence {
-  async upsertOpportunities(_opps: readonly unknown[]): Promise<void> {}
-  async getRecentOpportunities(_limit: number): Promise<readonly unknown[]> {
-    return [];
-  }
-}
+export { NOVA_PERSISTENCE_VERSION } from './version.js';
+export { SupabasePersistence, createSupabasePersistence } from './client.js';
+export { StubPersistence } from './stub.js';
+export type {
+  OpportunityRow,
+  DiscoveredPairRow,
+  PriceSnapshotRow,
+  Result,
+  SupabasePersistenceDeps,
+} from './client.js';
