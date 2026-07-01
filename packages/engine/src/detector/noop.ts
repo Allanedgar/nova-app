@@ -42,7 +42,7 @@ export async function runTick(
   const snapshots: PriceSnapshot[] = [];
   for (const c of connectors) {
     try {
-      const snap = await c.fetchSnapshot(pair);
+      const snap = await c.fetchTicker(pair);
       if (snap !== null) snapshots.push(snap);
     } catch (err) {
       errors.push(

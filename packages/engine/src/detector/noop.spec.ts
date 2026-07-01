@@ -9,23 +9,33 @@ const INFO: ExchangeInfo = {
 
 const pair: TradingPair = { base: 'BTC', quote: 'USDT' };
 
-function stub(id: string, returns: 'ok' | 'null' | 'throw'): Connector {
-  return {
-    id,
-    kind: 'cex',
-    info: INFO,
-    fetchSnapshot: async () => {
-      if (returns === 'throw') throw new Error('boom');
-      if (returns === 'null') return null;
-      const snap: PriceSnapshot = {
-        bid: 100, ask: 101, bidQty: 1, askQty: 1,
-        timestamp: 0, venue: INFO, pair,
-      };
-      return snap;
-    },
-    fetchHealth: async () => ({ status: 'active', latencyMs: 1, checkedAt: 0 }),
-  };
-}
+const stub = (id: string, returns: 'ok' | 'null' | 'throw'): Connector => ({
+  id,
+  kind: 'cex',
+  info: INFO,
+  fetchTicker: async () => {
+    if (returns === 'throw') throw new Error('boom');
+    if (returns === 'null') return null;
+    const snap: PriceSnapshot = {
+      bid: 100, ask: 101, last: 100.5, volume24h: 0,
+      timestamp: 0, venue: INFO, pair,
+    };
+    return snap;
+  },
+  fetchOrderBook: async () => null,
+  fetchTrades: async () => [],
+  fetchFees: async () => ({ makerFeeBps: 0, takerFeeBps: 0, withdrawalFees: {}, venue: INFO, asOf: 0 }),
+  fetchExchangeInfo: async () => INFO,
+  fetchMarkets: async () => [],
+  discoverAssets: async () => [],
+  fetchNetworkStatus: async () => ({
+    status: 'active', message: null,
+    depositsEnabled: true, withdrawalsEnabled: true,
+    tradingEnabled: true, maintenance: false,
+    checkedAt: 0, venue: INFO,
+  }),
+  health: async () => ({ status: 'active', latencyMs: 1, checkedAt: 0 }),
+});
 
 describe('runTick (Phase 1 detector)', () => {
   it('returns one PriceSnapshot per working connector', async () => {

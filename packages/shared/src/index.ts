@@ -13,4 +13,11 @@ export type {
   ConnectorHealth,
   ExchangeInfo,
   PriceSnapshot,
+  Market,
+  OrderBook,
+  OrderBookLevel,
+  Trade,
+  FeeSchedule,
+  NetworkStatus,
+  DiscoveredMarket,
 } from './connector.js';
