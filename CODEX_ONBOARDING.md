@@ -55,6 +55,7 @@ It detects and executes arbitrage opportunities across CEXs, DEXs, bridges, and 
 
 ```
 Latest commits:
+  a450025 docs: add CODEX_ONBOARDING.md — project state and continuation guide for AI agents
   b8bbafc feat: add supabase environment setup
   aee9a5e feat: push complete phase 0-3
   07ec13d feat: add real-data arbitrage scan
@@ -116,14 +117,13 @@ npx tsx scripts/real-data-arbitrage-scan.ts  # live scan
 - `packages/connectors/src/dex/base.ts` — DEX base class
 - `supabase/migrations/20260701000000_phase1_initial.sql` — data model
 - `CODEX_ONBOARDING.md` — this file
-</parameter>
-<task_progress>
+
+## 7. CURRENT HANDOFF STATUS
+
 - [x] Create comprehensive Codex onboarding document
-- [ ] Include phase 0-3 summary
-- [ ] Include GitHub state
-- [ ] Include Supabase state
-- [ ] Include how to continue
-- [ ] Push to GitHub
-- [ ] Report
-</parameter>
-</write_to_file>
+- [x] Include phase 0-3 summary
+- [x] Include GitHub state
+- [x] Include Supabase state
+- [x] Include how to continue
+- [x] Push to GitHub
+- [x] Report
