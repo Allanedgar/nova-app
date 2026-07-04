@@ -1,0 +1,25 @@
+{
+  "name": "@nova-app/market-data",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint src --max-warnings 0"
+  },
+  "dependencies": {
+    "@nova-app/shared": "workspace:*",
+    "@nova-app/connectors": "workspace:*",
+    "@nova-app/engine": "workspace:*",
+    "@nova-app/discovery": "workspace:*",
+    "@nova-app/execution": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0",
+    "typescript": "^5.3.0"
+  }
+}

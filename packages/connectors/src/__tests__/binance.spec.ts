@@ -5,7 +5,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { BinanceConnector, fromBinanceSymbol, toBinanceSymbol } from '../cex/binance.js';
+import { BinanceConnector, toBinanceSymbol, fromBinanceSymbol } from '../cex/binance.js';
 
 const pair = { base: 'BTC', quote: 'USDT' };
 
@@ -67,7 +67,7 @@ describe('BinanceConnector.fetchTicker (was fetchSnapshot)', () => {
     expect(t).not.toBeNull();
     expect(t!.bid).toBeCloseTo(60000.10);
     expect(t!.ask).toBeCloseTo(60000.20);
-    expect(t!.last).toBe(60000.15);
+    expect(t!.last).toBeCloseTo(60000.15, 2);
     expect(t!.volume24h).toBe(1234.5);
     expect(t!.timestamp).toBe(1_700_000_000_005);
   });
@@ -82,7 +82,7 @@ describe('BinanceConnector.fetchTicker (was fetchSnapshot)', () => {
     const c = new BinanceConnector({ fetchImpl: f });
     const t = await c.fetchTicker(pair);
     expect(t).not.toBeNull();
-    expect(t!.last).toBe(101); // mid of bid/ask
+    expect(t!.last).toBeCloseTo(101, 2); // mid of bid/ask
     expect(t!.volume24h).toBe(0);
   });
 

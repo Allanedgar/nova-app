@@ -6,7 +6,7 @@
  * must implement. Pricing data flows through these types unchanged.
  */
 
-import type { TradingPair } from './index.js';
+import type { TradingPair } from './assets.js';
 
 /** A venue: CEX, DEX, or bridge. */
 export type ConnectorKind = 'cex' | 'dex' | 'bridge';
