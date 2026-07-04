@@ -1,0 +1,4 @@
+# Supabase CLI configuration
+project_id = "nova-arbitrage-pro"
+name = "Nova Arbitrage Pro"
+org_id = "your-org-id"
