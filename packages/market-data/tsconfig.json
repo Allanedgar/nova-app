@@ -13,6 +13,8 @@
     { "path": "../connectors" },
     { "path": "../engine" },
     { "path": "../discovery" },
-    { "path": "../execution" }
+    { "path": "../execution" },
+    { "path": "../dex" },
+    { "path": "../bridge" }
   ]
 }

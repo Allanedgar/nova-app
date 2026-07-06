@@ -2,7 +2,7 @@
  * 1inch DEX Aggregator Connector
  * Uses the official 1inch API v5.
  */
-import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '../../dex/src/types.js';
+import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '@nova-app/dex';
 
 export class OneInchConnector implements DexConnector {
   readonly id = '1inch';

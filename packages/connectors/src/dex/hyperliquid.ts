@@ -3,8 +3,8 @@
  * Uses the verified working Hyperliquid API.
  * Endpoint: api.hyperliquid.xyz/info
  */
-import { CONFIG } from '../../../dex/src/config.js';
-import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '../../dex/src/types.js';
+import { CONFIG } from '@nova-app/dex/config';
+import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '@nova-app/dex';
 
 export class HyperliquidConnector implements DexConnector {
   readonly id = 'hyperliquid';

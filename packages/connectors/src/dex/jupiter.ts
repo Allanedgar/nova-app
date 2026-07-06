@@ -2,8 +2,8 @@
  * Jupiter DEX Aggregator Connector (Solana)
  * Uses the official Jupiter API v6.
  */
-import { CONFIG } from '../../../dex/src/config.js';
-import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '../../dex/src/types.js';
+import { CONFIG } from '@nova-app/dex/config';
+import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '@nova-app/dex';
 
 export class JupiterConnector implements DexConnector {
   readonly id = 'jupiter';

@@ -14,7 +14,8 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
-    "@nova-app/shared": "workspace:*"
+    "@nova-app/shared": "workspace:*",
+    "@nova-app/dex": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^1.6.0",

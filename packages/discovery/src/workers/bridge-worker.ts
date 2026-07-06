@@ -1,5 +1,5 @@
 /**
- * Bridge Discovery Worker — scans a bridge venue for routes and assets.
+ * Bridge Discovery Worker - scans a bridge venue for routes and assets.
  */
 import type { BridgeConnector } from '@nova-app/bridge';
 import type { AssetEntry, DiscoveredPair, DiscoveryWorker } from '../types.js';
@@ -21,13 +21,23 @@ export class BridgeDiscoveryWorker implements DiscoveryWorker {
       const pairs: DiscoveredPair[] = [];
 
       for (const route of routes) {
-        const assetId = `${this.connector.info.code}:${route.tokenSymbol}`;
+        const venueCode = this.connector.info.code ?? this.connector.id;
+        const tokenSymbol = route.tokenSymbol ?? route.originToken ?? route.tokenAddress ?? 'UNKNOWN';
+        const tokenAddress = route.tokenAddress ?? route.originToken ?? route.destinationToken;
+        const sourceChain = route.sourceChain ?? String(route.originChainId ?? 'source');
+        const destinationChain = route.destinationChain ?? String(route.destinationChainId ?? 'destination');
+        const assetId = `${venueCode}:${tokenSymbol}`;
 
         if (!assets.has(assetId)) {
           assets.set(assetId, {
-            id: assetId, symbol: route.tokenSymbol, name: route.tokenSymbol, decimals: 18,
-            contractAddress: route.tokenAddress,
-            firstSeenAt: now, lastObservedAt: now, venues: [this.connector.info.code],
+            id: assetId,
+            symbol: tokenSymbol,
+            name: tokenSymbol,
+            decimals: 18,
+            contractAddress: tokenAddress,
+            firstSeenAt: now,
+            lastObservedAt: now,
+            venues: [venueCode],
           });
         }
 
@@ -35,8 +45,8 @@ export class BridgeDiscoveryWorker implements DiscoveryWorker {
           venueId: this.connector.id,
           baseAssetId: assetId,
           quoteAssetId: assetId,
-          symbol: `${route.tokenSymbol}:${route.sourceChain}→${route.destinationChain}`,
-          status: route.isActive ? 'active' : 'paused',
+          symbol: `${tokenSymbol}:${sourceChain}->${destinationChain}`,
+          status: route.isActive === false ? 'paused' : 'active',
           firstSeenAt: now,
           lastObservedAt: now,
         });

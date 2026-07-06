@@ -27,6 +27,10 @@ export class WormholeConnector implements BridgeConnector {
     }));
   }
 
+  async fetchRoutes(): Promise<readonly BridgeRoute[]> {
+    return this.getRoutes();
+  }
+
   private async fetchJson(url: string): Promise<unknown> {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Wormhole API error: ${res.status}`);

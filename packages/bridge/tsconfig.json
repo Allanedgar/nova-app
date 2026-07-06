@@ -8,5 +8,5 @@
   },
   "include": ["src/**/*"],
   "exclude": ["**/__tests__/**", "**/*.spec.ts", "dist"],
-  "references": [{ "path": "../shared" }]
+  "references": [{ "path": "../shared" }, { "path": "../dex" }]
 }

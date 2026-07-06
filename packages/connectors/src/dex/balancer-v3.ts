@@ -2,8 +2,8 @@
  * Balancer v3 DEX Connector (via The Graph subgraph)
  * Uses corrected subgraph ID on the decentralized network.
  */
-import { CONFIG } from '../../../dex/src/config.js';
-import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '../../dex/src/types.js';
+import { CONFIG } from '@nova-app/dex/config';
+import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '@nova-app/dex';
 
 const SUBGRAPH_URL = `${CONFIG.graphGateway}/${CONFIG.graphApiKey}/subgraphs/id/${CONFIG.balancerV3SubgraphId}`;
 

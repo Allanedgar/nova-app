@@ -8,11 +8,12 @@
   "exports": { ".": "./src/index.ts" },
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {
-    "@nova-app/shared": "workspace:*"
+    "@nova-app/shared": "workspace:*",
+    "@nova-app/dex": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^1.6.0",

@@ -17,6 +17,7 @@
  */
 
 export const ENGINE_VERSION = '1.0.0';
+export const NOVA_ENGINE_VERSION = ENGINE_VERSION;
 
 // Types
 export type {
@@ -67,3 +68,7 @@ export { DefaultWsFeedManager } from './marketdata/ws-feed.js';
 // Execution
 export type { SimulatedFill, SimulationResult, CircuitBreakerConfig } from './execution/simulator.js';
 export { ExecutionSimulator } from './execution/simulator.js';
+
+// Direct detector utilities
+export { aggregateSnapshots, filterFresh, symbolKey } from './aggregator.js';
+export { detectSpatial, runDetectionCycle } from './spatial.js';

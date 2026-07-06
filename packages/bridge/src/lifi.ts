@@ -53,6 +53,10 @@ export class LiFiConnector implements BridgeConnector {
     return routes;
   }
 
+  async fetchRoutes(): Promise<readonly BridgeRoute[]> {
+    return this.getRoutes();
+  }
+
   async getQuote(route: BridgeRoute, amount: string): Promise<BridgeQuote | null> {
     try {
       const data = await this.fetchJson(

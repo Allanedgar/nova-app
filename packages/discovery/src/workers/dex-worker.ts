@@ -21,21 +21,22 @@ export class DexDiscoveryWorker implements DiscoveryWorker {
       const pairs: DiscoveredPair[] = [];
 
       for (const pool of pools) {
-        const baseId = `${this.connector.info.code}:${pool.token0.symbol}`;
-        const quoteId = `${this.connector.info.code}:${pool.token1.symbol}`;
+        const venueCode = this.connector.info.code ?? this.connector.id;
+        const baseId = `${venueCode}:${pool.token0.symbol}`;
+        const quoteId = `${venueCode}:${pool.token1.symbol}`;
 
         if (!assets.has(baseId)) {
           assets.set(baseId, {
-            id: baseId, symbol: pool.token0.symbol, name: pool.token0.symbol, decimals: pool.token0.decimals,
+            id: baseId, symbol: pool.token0.symbol, name: pool.token0.name ?? pool.token0.symbol, decimals: pool.token0.decimals,
             contractAddress: pool.token0.id, chainId: undefined,
-            firstSeenAt: now, lastObservedAt: now, venues: [this.connector.info.code],
+            firstSeenAt: now, lastObservedAt: now, venues: [venueCode],
           });
         }
         if (!assets.has(quoteId)) {
           assets.set(quoteId, {
-            id: quoteId, symbol: pool.token1.symbol, name: pool.token1.symbol, decimals: pool.token1.decimals,
+            id: quoteId, symbol: pool.token1.symbol, name: pool.token1.name ?? pool.token1.symbol, decimals: pool.token1.decimals,
             contractAddress: pool.token1.id, chainId: undefined,
-            firstSeenAt: now, lastObservedAt: now, venues: [this.connector.info.code],
+            firstSeenAt: now, lastObservedAt: now, venues: [venueCode],
           });
         }
 

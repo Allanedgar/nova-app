@@ -42,19 +42,27 @@ export interface BaseCexDeps {
   readonly extractTrades?: (body: unknown) => unknown[];
   /** Extract the network status object from the API response body. Default: body */
   readonly extractStatus?: (body: unknown) => unknown;
+  /** Maximum time for each HTTP attempt before the venue is treated as unreachable. */
+  readonly requestTimeoutMs?: number;
 }
 
 const safeJson = async <T>(res: Response): Promise<T | null> => {
   if (!res.ok) return null;
   try { return (await res.json()) as T; } catch { return null; }
 };
-const safeFetch = async (f: typeof fetch, url: string): Promise<Response | null> => {
+const safeFetch = async (f: typeof fetch, url: string, timeoutMs: number): Promise<Response | null> => {
   let lastError: unknown;
   for (let attempt = 0; attempt <= 2; attempt++) {
-    try { return await f(url); } catch (e) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await f(url, { signal: controller.signal });
+    } catch (e) {
       lastError = e;
       if (attempt >= 2) break;
       await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
+    } finally {
+      clearTimeout(timeout);
     }
   }
   return null;
@@ -147,6 +155,7 @@ export class BaseCexConnector implements Connector {
   protected readonly extractOB: (body: unknown) => unknown;
   protected readonly extractTrades: (body: unknown) => unknown[];
   protected readonly extractStatus: (body: unknown) => unknown;
+  protected readonly requestTimeoutMs: number;
 
   constructor(deps: BaseCexDeps & { id: string }) {
     this.id = deps.id;
@@ -170,11 +179,12 @@ export class BaseCexConnector implements Connector {
     this.extractOB = deps.extractOB ?? defaultExtractSingle;
     this.extractTrades = deps.extractTrades ?? defaultExtractArray;
     this.extractStatus = deps.extractStatus ?? defaultExtractSingle;
+    this.requestTimeoutMs = deps.requestTimeoutMs ?? 1_500;
   }
 
   async fetchMarkets(): Promise<readonly Market[]> {
     const url = `${this.baseUrl}${this.marketsPath}`;
-    const res = await safeFetch(this.fetchImpl, url);
+    const res = await safeFetch(this.fetchImpl, url, this.requestTimeoutMs);
     if (!res) return [];
     const body = await safeJson<unknown>(res);
     if (!body) return [];
@@ -198,7 +208,7 @@ export class BaseCexConnector implements Connector {
   async fetchTicker(pair: { base: string; quote: string }): Promise<PriceSnapshot | null> {
     const symbol = this.toSymbol(pair);
     const url = `${this.baseUrl}${this.tickerPath(symbol)}`;
-    const res = await safeFetch(this.fetchImpl, url);
+    const res = await safeFetch(this.fetchImpl, url, this.requestTimeoutMs);
     if (!res) return null;
     const body = await safeJson<unknown>(res);
     if (!body) return null;
@@ -210,7 +220,7 @@ export class BaseCexConnector implements Connector {
   async fetchOrderBook(pair: { base: string; quote: string }, depth: number = 20): Promise<OrderBook | null> {
     const symbol = this.toSymbol(pair);
     const url = `${this.baseUrl}${this.obPath(symbol, depth)}`;
-    const res = await safeFetch(this.fetchImpl, url);
+    const res = await safeFetch(this.fetchImpl, url, this.requestTimeoutMs);
     if (!res) return null;
     const body = await safeJson<unknown>(res);
     if (!body) return null;
@@ -225,7 +235,7 @@ export class BaseCexConnector implements Connector {
     if (!this.tradesPath) return [];
     const symbol = this.toSymbol(pair);
     const url = `${this.baseUrl}${this.tradesPath(symbol)}`;
-    const res = await safeFetch(this.fetchImpl, url);
+    const res = await safeFetch(this.fetchImpl, url, this.requestTimeoutMs);
     if (!res) return [];
     const body = await safeJson<unknown>(res);
     if (!body) return [];
@@ -247,7 +257,7 @@ export class BaseCexConnector implements Connector {
 
   async fetchNetworkStatus(): Promise<NetworkStatus> {
     const url = `${this.baseUrl}${this.statusPath}`;
-    const res = await safeFetch(this.fetchImpl, url);
+    const res = await safeFetch(this.fetchImpl, url, this.requestTimeoutMs);
     if (!res) return { status: 'maintenance', message: 'network unreachable', depositsEnabled: false, withdrawalsEnabled: false, tradingEnabled: false, maintenance: true, checkedAt: this.clock(), venue: this.info };
     const ok = res.ok;
     return { status: ok ? 'active' : 'degraded', message: ok ? null : `HTTP ${res.status}`, depositsEnabled: ok, withdrawalsEnabled: ok, tradingEnabled: ok, maintenance: !ok, checkedAt: this.clock(), venue: this.info };
@@ -256,7 +266,7 @@ export class BaseCexConnector implements Connector {
   async health(): Promise<ConnectorHealth> {
     const url = `${this.baseUrl}${this.statusPath}`;
     const started = this.clock();
-    const res = await safeFetch(this.fetchImpl, url);
+    const res = await safeFetch(this.fetchImpl, url, this.requestTimeoutMs);
     if (!res) return { status: 'maintenance', latencyMs: this.clock() - started, checkedAt: this.clock(), lastError: 'network unreachable' };
     return { status: res.ok ? 'active' : 'degraded', latencyMs: this.clock() - started, checkedAt: this.clock() };
   }

@@ -39,6 +39,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-01-15
+
+### Added
+- Phase 2 Detection Engine v2 implementation
+- Market Snapshot Aggregator (`packages/engine/src/aggregator.ts`)
+- Validation Pipeline (`packages/engine/src/validator.ts`) with 9 validation steps
+- Risk Scorer (`packages/engine/src/risk.ts`) with 6-dimensional scoring
+- Confidence Scorer (`packages/engine/src/confidence.ts`)
+- Spatial Arbitrage Detector (`packages/engine/src/spatial.ts`)
+- ID Generator (`packages/engine/src/id.ts`)
+- Opportunity types (`packages/shared/src/opportunity.ts`)
+- 47 new engine tests (114 total across all packages)
+- Phase 1.5 market infrastructure (Binance, OKX connectors, registry, persistence)
+
+### Changed
+- Engine version bumped to 0.3.0
+- Connector interface expanded to 9 methods (Phase 1.5)
+- Shared types reorganized to avoid circular dependencies
+- All packages lint clean with `--max-warnings 0`
+
+### Fixed
+- TypeScript build errors (circular dependency in shared types)
+- ESLint unused import warnings
+
+---
+
 ## [0.1.0] - 2026-01-15
 
 ### Added

@@ -43,7 +43,17 @@
       "@nova-app/alerts": ["./packages/alerts/src/index.ts"],
       "@nova-app/alerts/*": ["./packages/alerts/src/*"],
       "@nova-app/execution": ["./packages/execution/src/index.ts"],
-      "@nova-app/execution/*": ["./packages/execution/src/*"]
+      "@nova-app/execution/*": ["./packages/execution/src/*"],
+      "@nova-app/dex": ["./packages/dex/src/index.ts"],
+      "@nova-app/dex/*": ["./packages/dex/src/*"],
+      "@nova-app/bridge": ["./packages/bridge/src/index.ts"],
+      "@nova-app/bridge/*": ["./packages/bridge/src/*"],
+      "@nova-app/discovery": ["./packages/discovery/src/index.ts"],
+      "@nova-app/discovery/*": ["./packages/discovery/src/*"],
+      "@nova-app/resilience": ["./packages/resilience/src/index.ts"],
+      "@nova-app/resilience/*": ["./packages/resilience/src/*"],
+      "@nova-app/observability": ["./packages/observability/src/index.ts"],
+      "@nova-app/observability/*": ["./packages/observability/src/*"]
     }
   },
   "exclude": ["node_modules", "dist", "build", ".next", ".turbo"]

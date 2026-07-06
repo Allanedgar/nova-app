@@ -2,7 +2,7 @@
  * Raydium DEX Connector (Solana)
  * Uses the official Raydium API v3.
  */
-import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '../../dex/src/types.js';
+import type { DexInfo, DexPool, DexPoolSnapshot, DexConnector } from '@nova-app/dex';
 
 export class RaydiumConnector implements DexConnector {
   readonly id = 'raydium';

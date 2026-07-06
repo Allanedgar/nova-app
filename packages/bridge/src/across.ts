@@ -3,7 +3,7 @@
  * Uses the verified working Across API.
  * Endpoint: across.to/api
  */
-import { CONFIG } from '../../dex/src/config.js';
+import { CONFIG } from '@nova-app/dex/config';
 import type { BridgeInfo, BridgeRoute, BridgeQuote, BridgeConnector } from './types.js';
 
 export class AcrossConnector implements BridgeConnector {
@@ -33,6 +33,10 @@ export class AcrossConnector implements BridgeConnector {
       destinationToken: r.destinationToken,
       bridgeId: this.id,
     }));
+  }
+
+  async fetchRoutes(): Promise<readonly BridgeRoute[]> {
+    return this.getRoutes();
   }
 
   async getQuote(route: BridgeRoute, amount: string): Promise<BridgeQuote | null> {

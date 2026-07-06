@@ -2,7 +2,7 @@
  * Market Data Pipeline — orchestrates the flow:
  *   discovery -> snapshot -> arbitrage detection -> execution
  */
-import type { Connector } from '@nova-app/connectors';
+import type { Connector } from '@nova-app/shared';
 import type { AssetRegistry, DiscoveryScheduler, VenueRegistry, DiscoveryResult } from '@nova-app/discovery';
 import { aggregateSnapshots, detectSpatial } from '@nova-app/engine';
 import { ExecutionEngine } from '@nova-app/execution';

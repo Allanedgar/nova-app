@@ -2,37 +2,44 @@
  * Core types for the DEX connector system.
  */
 export interface DexInfo {
+  readonly id?: string;
   readonly name: string;
-  readonly code: string;
-  readonly url: string;
+  readonly code?: string;
+  readonly url?: string;
   readonly chain: string;
-  readonly version: string;
+  readonly version?: string;
   readonly factoryAddress?: string;
   readonly subgraphUrl: string;
   readonly feeTiers?: number[];
+  readonly supportedFees?: number[];
 }
 
 export interface DexPool {
   readonly id: string;
-  readonly address: string;
-  readonly token0: { id: string; symbol: string; decimals: number };
-  readonly token1: { id: string; symbol: string; decimals: number };
+  readonly address?: string;
+  readonly token0: { id: string; symbol: string; decimals: number; name?: string };
+  readonly token1: { id: string; symbol: string; decimals: number; name?: string };
   readonly feeTier: number;
+  readonly tick?: number | null;
   readonly liquidity: string;
+  readonly sqrtPrice?: string;
   readonly volumeUSD: string;
-  readonly totalValueLockedUSD: string;
-  readonly createdAtBlock: number;
-  readonly createdAtTimestamp: number;
+  readonly totalValueLockedUSD?: string;
+  readonly createdAtBlock?: number;
+  readonly createdAtTimestamp?: number;
 }
 
 export interface DexPoolSnapshot {
   readonly id: string;
-  readonly pool: { id: string };
+  readonly pool?: { id: string };
   readonly liquidity: string;
   readonly volumeUSD: string;
-  readonly totalValueLockedUSD: string;
-  readonly token0Price: string;
-  readonly token1Price: string;
+  readonly totalValueLockedUSD?: string;
+  readonly feeTier?: number;
+  readonly token0?: { id: string; symbol: string; decimals: number; name?: string };
+  readonly token1?: { id: string; symbol: string; decimals: number; name?: string };
+  readonly token0Price?: string;
+  readonly token1Price?: string;
   readonly timestamp: number;
 }
 
